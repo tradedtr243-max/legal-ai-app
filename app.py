@@ -2,21 +2,18 @@ import streamlit as st
 import google.generativeai as genai
 import pypdf
 
-# 1. ضبط إعدادات الصفحة
 st.set_page_config(
     page_title="المحلل القانوني الذكي (LegalAI Pro)",
     page_icon="⚖️",
     layout="wide"
 )
 
-# 2. جلب مفتاح API الخاص بـ Gemini من الـ Secrets
 try:
     api_key = st.secrets["GEMINI_API_KEY"]
     genai.configure(api_key=api_key)
 except Exception:
     st.error("⚠️ يرجى التأكد من ضبط GEMINI_API_KEY في Streamlit Secrets.")
 
-# 3. القائمة الجانبية (Sidebar) - قسم الدفع والاشتراك عبر USDT
 st.sidebar.title("💳 خطة الاشتراك والدفع")
 st.sidebar.info(
     """
@@ -34,21 +31,17 @@ st.sidebar.info(
 st.sidebar.subheader("🔒 تأكيد عملية الدفع")
 tx_id = st.sidebar.text_input("أدخل رقم المعاملة (Transaction Hash / ID):")
 
-# 4. الواجهة الرئيسية
 st.title("⚖️ المحلل القانوني الذكي (LegalAI Pro)")
 st.write("أداة تحليل العقود والمستندات الذكية: كشف الثغرات، حساب المخاطر، واستراتيجيات التفاوض.")
 
-# 5. رفع وقراءة ملف الـ PDF
 uploaded_file = st.file_uploader("(PDF صيغة) قم برفع العقد أو المستند", type=["pdf"])
 
 if uploaded_file is not None:
-    # التحقق من إدخال رقم المعاملة قبل البدء
     if not tx_id.strip():
         st.warning("⚠️ يرجى إدخال رقم المعاملة (Transaction ID) في القائمة الجانبية لتأكيد الدفع وتفعيل التحليل.")
     else:
         st.success("✅ تم استلام رقم المعاملة وجاري معالجة العقد...")
         
-        # استخراج النص من ملف PDF
         pdf_reader = pypdf.PdfReader(uploaded_file)
         text_content = ""
         for page in pdf_reader.pages:
@@ -59,7 +52,6 @@ if uploaded_file is not None:
         if text_content.strip():
             st.info("📄 تم قراءة المستند بنجاح. جاري التحليل بواسطة الذكاء الاصطناعي...")
             
-            # بناء أمر التحليل القانوني (Prompt)
             prompt = f"""
             أنت مستشار قانوني خبير وخبير تفاوض. قم بتحليل المستند القانوني التالي بدقة:
             
@@ -72,7 +64,6 @@ if uploaded_file is not None:
             {text_content}
             """
             
-            # استدعاء نموذج الذكاء الاصطناعي
             try:
                 model = genai.GenerativeModel('gemini-1.5-flash')
                 response = model.generate_content(prompt)
